@@ -63,7 +63,7 @@ void WRANG_gen(TreeNode* root, FILE* html, u8 inlist) {
     break;
 
   case NEWLINE:
-    fprintf(html, "\n<br>\n");
+    fprintf(html, "\n<span style=\"display: block; margin-bottom: 1.5em\"></span>\n");
     WRANG_gen(root->left_child, html, 0);
     WRANG_gen(root->right_sibling, html, 0);
     break;
