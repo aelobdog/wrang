@@ -1,3 +1,31 @@
+/*	-----------------------------------------------------------------------------
+ *	WRANG, the writing language
+ *	-----------------------------------------------------------------------------
+ *
+ *	MIT License
+ *
+ *	Copyright (c) 2022 Ashwin Godbole
+ *	
+ *	Permission is hereby granted, free of charge, to any person obtaining a copy
+ *	of this software and associated documentation files (the "Software"), to deal
+ *	in the Software without restriction, including without limitation the rights
+ *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *	copies of the Software, and to permit persons to whom the Software is
+ *	furnished to do so, subject to the following conditions:
+ *
+ *	The above copyright notice and this permission notice shall be included in all
+ *	copies or substantial portions of the Software.
+ *
+ *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *	SOFTWARE.
+ *	-----------------------------------------------------------------------------
+ */
+
 #ifndef HEADER_H
 #define HEADER_H
 
@@ -23,7 +51,6 @@ typedef struct Link Link;
 typedef struct Image Image;
 typedef struct Newline Newline;
 typedef struct Word Word;
-typedef struct List List;
 
 typedef uint8_t  u8;
 typedef uint64_t u64;
@@ -85,6 +112,7 @@ typedef enum ParseTreeNodeType {
   LINK,
   IMAGE,
   LIST,
+  URL,
   ROOT,
 } ParseTreeNodeType;
 
@@ -93,10 +121,6 @@ typedef union ParseTreeContentNode {
   Heading* heading;
   Link* link;
   Image* image;
-  List* list;
-  // Italics* italics;
-  // Underline* underline;
-  // Newline* newline;
 } ParseTreeContentNode;
 
 struct TreeNode {
@@ -152,5 +176,6 @@ TreeNode* parse_image(TokenList*);
 
 void WRANG_lex(char*, TokenList*);
 TreeNode* WRANG_parse(TokenList*);
+void WRANG_gen(TreeNode*, FILE*, u8);
 
 #endif

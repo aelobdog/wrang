@@ -1,5 +1,32 @@
+/*	-----------------------------------------------------------------------------
+ *	WRANG, the writing language
+ *	-----------------------------------------------------------------------------
+ *
+ *	MIT License
+ *
+ *	Copyright (c) 2022 Ashwin Godbole
+ *	
+ *	Permission is hereby granted, free of charge, to any person obtaining a copy
+ *	of this software and associated documentation files (the "Software"), to deal
+ *	in the Software without restriction, including without limitation the rights
+ *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *	copies of the Software, and to permit persons to whom the Software is
+ *	furnished to do so, subject to the following conditions:
+ *
+ *	The above copyright notice and this permission notice shall be included in all
+ *	copies or substantial portions of the Software.
+ *
+ *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *	SOFTWARE.
+ *	-----------------------------------------------------------------------------
+ */
+
 #include "header.h"
-#include <unistd.h>
 
 void add_prev_token_as_word(TokenList* tklist, char** tok_start_ptr, char** data_ptr, u64 line) {
   if (*tok_start_ptr != *data_ptr) {
@@ -210,6 +237,9 @@ void WRANG_lex(char* data, TokenList* tklist) {
     default:
       data_iterator++;
     }
+
+    if (*data_iterator == '\0') break;
   }
+  token_append(tklist, NULL, 0, NLINE, 0);
   token_append(tklist, NULL, 0, NUM_TOKEN_TYPES, 0);
 }

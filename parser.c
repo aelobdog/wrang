@@ -1,6 +1,32 @@
+/*	-----------------------------------------------------------------------------
+ *	WRANG, the writing language
+ *	-----------------------------------------------------------------------------
+ *
+ *	MIT License
+ *
+ *	Copyright (c) 2022 Ashwin Godbole
+ *	
+ *	Permission is hereby granted, free of charge, to any person obtaining a copy
+ *	of this software and associated documentation files (the "Software"), to deal
+ *	in the Software without restriction, including without limitation the rights
+ *	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *	copies of the Software, and to permit persons to whom the Software is
+ *	furnished to do so, subject to the following conditions:
+ *
+ *	The above copyright notice and this permission notice shall be included in all
+ *	copies or substantial portions of the Software.
+ *
+ *	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *	SOFTWARE.
+ *	-----------------------------------------------------------------------------
+ */
+
 #include "header.h"
-#include <stdio.h>
-#include <string.h>
 
 TreeNode* treenode_new() {
   TreeNode* node = malloc(sizeof(TreeNode));
@@ -12,7 +38,7 @@ TreeNode* treenode_new() {
 
 void add_child(TreeNode** parent, TreeNode* child) {
   if (*parent == NULL) {
-    // error !
+    fprintf(stderr, "ERROR: cannot add nodes to NULL parent\n");
   }
   
   if ((*parent)->left_child == NULL) {
@@ -70,6 +96,10 @@ void tree_print(TreeNode* root, int level) {
     printf("LINE\n");
     break;
 
+  case NEWLINE:
+    printf("<br>\n");
+    break;
+
   case LINK:
     printf("LINK\n");
     tree_print(root->content.link->url, level+1);
@@ -86,6 +116,10 @@ void tree_print(TreeNode* root, int level) {
 
   case LIST:
     printf("LIST\n");
+    break;
+
+  case URL:
+    printf("URL\n");
     break;
 
   default:
@@ -114,31 +148,20 @@ TreeNode* new_node(ParseTreeNodeType type) {
   case ITALICS:
   case UNDERLINE:
   case CODE:
+  case URL:
     break;
 
   case LINE:
     break;
 
   case LINK:
-    {
-      node->content.link = malloc(sizeof(Link));
-      node->content.link->url = new_node(PLAINTEXT);
-      Token* urltok = malloc(sizeof(Token));
-      urltok->len = 3;
-      urltok->ptr = "url";
-      node->content.link->url->content.word->token = urltok;
-    }
+    node->content.link = malloc(sizeof(Link));
+    node->content.link->url = new_node(URL);
     break;
 
   case IMAGE:
-    {
-      node->content.image = malloc(sizeof(Image));
-      node->content.image->url = new_node(PLAINTEXT);
-      Token* urltok = malloc(sizeof(Token));
-      urltok->len = 3;
-      urltok->ptr = "url";
-      node->content.image->url->content.word->token = urltok;
-    }
+    node->content.image = malloc(sizeof(Image));
+    node->content.image->url = new_node(URL);
     break;
 
   case LIST:
@@ -402,42 +425,45 @@ void parse_tokens_till(TreeNode** parent, TokenList* tklist, TokenType type) {
       break;
       
     case COLON:
-      break;
+      t->type = WORD;
+      goto check_token;
 
     case SEM:
       t->type = WORD;
       goto check_token;
 
     case DASH:
-      if (! line_started) line_started = 1;
+      {
+	if (! line_started) line_started = 1;
 
-      Token* tok = token_next(tklist);
-      if (tok && tok->type == DASH) {
-	if (token_advance(tklist)) {
-	  tok = token_next(tklist);
-	  if (tok && tok->type == DASH) {
-	    TreeNode* line = new_node(LINE);
-	    add_child(parent, line);
-	    if (! token_advance(tklist))
-	      fprintf(stderr, "ERROR: (line %ld): parser internal error, `token_advance` must have failed somewhere\n", tok->line);
+	Token* tok = token_next(tklist);
+	if (tok && tok->type == DASH) {
+	  if (token_advance(tklist)) {
+	    tok = token_next(tklist);
+	    if (tok && tok->type == DASH) {
+	      TreeNode* line = new_node(LINE);
+	      add_child(parent, line);
+	      if (! token_advance(tklist))
+		fprintf(stderr, "ERROR: (line %ld): parser internal error, `token_advance` must have failed somewhere\n", tok->line);
+	    } else {
+	      TreeNode* word = new_node(PLAINTEXT);
+	      Token* dash_dash = (Token*)malloc(sizeof(Token));
+	      dash_dash->line = tok->line;
+	      dash_dash->ptr = "--";
+	      dash_dash->len = 2;
+	      word->content.word->token = dash_dash;
+	      add_child(parent, word);
+	      if (! token_advance(tklist))
+		fprintf(stderr, "ERROR: (line %ld): parser internal error, `token_advance` must have failed somewhere\n", tok->line);
+	    }
 	  } else {
-	    TreeNode* word = new_node(PLAINTEXT);
-	    Token* dash_dash = (Token*)malloc(sizeof(Token));
-	    dash_dash->line = tok->line;
-	    dash_dash->ptr = "--";
-	    dash_dash->len = 2;
-	    word->content.word->token = dash_dash;
-	    add_child(parent, word);
-	    if (! token_advance(tklist))
-	      fprintf(stderr, "ERROR: (line %ld): parser internal error, `token_advance` must have failed somewhere\n", tok->line);
+	    fprintf(stderr, "ERROR: (line %ld): parser internal error, `token_advance` must have failed somewhere\n", tok->line);
 	  }
-	} else {
-	  fprintf(stderr, "ERROR: (line %ld): parser internal error, `token_advance` must have failed somewhere\n", tok->line);
 	}
-      }
-      else {
-	t->type = WORD;
-	goto check_token;
+	else {
+	  t->type = WORD;
+	  goto check_token;
+	}
       }
       break;
 
@@ -447,7 +473,13 @@ void parse_tokens_till(TreeNode** parent, TokenList* tklist, TokenType type) {
       break;
 
     case NLINE:
-      line_started = 0;
+      {
+	if (! line_started) {
+	  TreeNode* newline = new_node(NEWLINE);
+	  add_child(parent, newline);
+	}
+	line_started = 0;
+      }
       break;
 
     case SPACE:
@@ -457,7 +489,6 @@ void parse_tokens_till(TreeNode** parent, TokenList* tklist, TokenType type) {
     case NUM_TOKEN_TYPES: break;
     }
 
-    // if (token_current(tklist)->type == NLINE) line_started = 0;
     status = token_advance(tklist);
   }
 }

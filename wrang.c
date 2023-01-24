@@ -28,9 +28,14 @@
 
 #include "header.h"
 
+void usage() {
+  printf("usage:\n");
+  printf("\n  wrang input_file output_file [ --css stylesheet ] [ --title \"title text\" ]\n\n");
+}
+
 int main(int argc, char** argv) {
   // usage: wrang input.wr output.html
-  if (argc != 3) { printf("error: expected 2 arguments, got %d\nusage: wrang input output\n", argc - 1); return 1; }
+  if (argc < 3) { usage(); return 1; }
 
   TokenList* tk_list;
   struct stat statbuf;
@@ -50,10 +55,47 @@ int main(int argc, char** argv) {
   tk_list = tokenlist_new();
 
   WRANG_lex(data, tk_list);
-  // token_list_print(tk_list); // this is a destructive operation
+  // token_list_print(tk_list);
 
   TreeNode* ast = WRANG_parse(tk_list);
-  tree_print(ast, 0);
+  // tree_print(ast, 0);
+
+  FILE* html = fopen(argv[2], "w");
+
+  fprintf(html, "<html>\n");
+  if (argc > 3) {
+    fprintf(html, "<head>\n");
+    for (int arg = 2; arg < argc;) {
+      if (! strcmp(argv[arg], "-css")) {
+	if (arg == argc - 1) {
+	  printf("ERROR: missing path to stylesheet.\n");
+	  usage();
+	  fclose(html);
+	  return 1;
+	}
+	fprintf(html, "<link rel=\"stylesheet\" href=\"%s\">\n", argv[arg + 1]);
+	++arg;
+      }
+
+      else if (! strcmp(argv[arg], "-title")) {
+	if (arg == argc - 1) {
+	  printf("ERROR: missing title.\n");
+	  usage();
+	  fclose(html);
+	  return 1;
+	}
+	fprintf(html, "<title>%s</title>\n", argv[arg + 1]);
+	++arg;
+      }
+      ++arg;
+    }
+    fprintf(html, "</head>\n");
+  }
+
+  WRANG_gen(ast, html, 0);
+  fprintf(html, "</html>");
+  fclose(html);
+  printf("done.\n");
 
   return 0;
 }
