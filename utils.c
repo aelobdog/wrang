@@ -159,3 +159,48 @@ u8 extract_heading_level(char* c) {
   if ((*c) >= '1' && (*c) <= '6') return (*c) - '0';
   return 0;
 }
+
+void free_nodes(TreeNode* root) {
+  if (! root) return;
+  
+  free_nodes(root->left_child);
+  free_nodes(root->right_sibling);
+
+  switch(root->node_type) {
+  case PLAINTEXT: free(root->content.word); break;
+  case HEADING: free(root->content.heading); break;
+
+  case LINK:
+    free(root->content.link->url);
+    free(root->content.link);
+    break;
+
+  case IMAGE:
+    free(root->content.image->url);
+    free(root->content.image);
+    break;
+
+  default: break;
+  }
+  free(root);
+}
+
+void free_tokenlist(TokenList* tklist) {
+  if (! tklist) return;
+  if (! tklist->root) return;
+
+  TokenArray* one = tklist->root;
+  TokenArray* two;
+  while (one) {
+    two = one;
+    one = one->next;
+    free(two);
+  }
+
+  free(tklist);
+}
+
+void WRANG_clean(TreeNode* root, TokenList* tklist) {
+  free_nodes(root);
+  free_tokenlist(tklist);
+}

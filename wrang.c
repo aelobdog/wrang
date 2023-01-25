@@ -27,6 +27,8 @@
  */
 
 #include "header.h"
+#include <stddef.h>
+#include <stdio.h>
 
 void usage() {
   printf("usage:\n");
@@ -38,19 +40,19 @@ int main(int argc, char** argv) {
   if (argc < 3) { usage(); return 1; }
 
   TokenList* tk_list;
-  struct stat statbuf;
   char* data;
+  size_t filesize = 0;
 
   // reading the wrang source file
-  int infile = open(argv[1], O_RDONLY);
-  if (infile < 0) { printf("error: could not open file '%s'\n", argv[1]); return 1; }
-
-  fstat(infile, &statbuf);
-
-  data = mmap(NULL, statbuf.st_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, infile, 0);
-  if(data == MAP_FAILED){ printf("error: could not read contents of file '%s'\n", argv[1]); return 1; }
-
-  close(infile);
+  FILE* infile = fopen(argv[1], "rb");
+  fseek(infile, 0L, SEEK_END);
+  filesize = ftell(infile);
+  fseek(infile, 0L, SEEK_SET);
+  data = malloc(filesize + 1);
+  if (! data) { fprintf(stderr, "ERROR: could not allocate memory for file's contents.\n"); return 1; }
+  if (! fread(data,1,filesize,infile)) { fprintf(stderr, "ERROR: could not read file's contents.\n"); return 1; }
+  data[filesize]=0;
+  fclose(infile);
 
   tk_list = tokenlist_new();
 
@@ -62,7 +64,7 @@ int main(int argc, char** argv) {
 
   FILE* html = fopen(argv[2], "w");
 
-  fprintf(html, "<html>\n");
+  fprintf(html, "<html>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
   if (argc > 3) {
     fprintf(html, "<head>\n");
     for (int arg = 2; arg < argc;) {
@@ -97,5 +99,7 @@ int main(int argc, char** argv) {
   fclose(html);
   printf("done.\n");
 
+  WRANG_clean(ast, tk_list);
+  free(data);
   return 0;
 }

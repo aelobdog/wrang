@@ -177,5 +177,6 @@ TreeNode* parse_image(TokenList*);
 void WRANG_lex(char*, TokenList*);
 TreeNode* WRANG_parse(TokenList*);
 void WRANG_gen(TreeNode*, FILE*, u8);
+void WRANG_clean(TreeNode*, TokenList*);
 
 #endif

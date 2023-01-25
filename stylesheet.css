@@ -7,8 +7,17 @@
 body {
     margin: 0;
     width: 100%;
-    height: 100%;
-    margin-bottom: 50px;
+}
+
+code {
+    padding: 3px;
+    background-color: #dadada;
+    border-radius: 3px;
+}
+
+.mascot {
+    width: 25%;
+    height: auto;
 }
 
 .content {
@@ -25,6 +34,10 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
     font-family: monospace;
+}
+
+u {
+    text-decoration-style: wavy;
 }
 
 a {
@@ -44,10 +57,9 @@ a:hover {
     .content {
         width: 90%;
     }
-    h1, h2, h3, h4, h5, h6 {
-        font-size: 0.9em;
-        font-family: monospace;
-        font-weight: normal;
+    .mascot {
+        width: 60%;
+        height: auto;
     }
     .main_date {
         display: none;

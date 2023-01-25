@@ -63,36 +63,36 @@ void WRANG_gen(TreeNode* root, FILE* html, u8 inlist) {
     break;
 
   case NEWLINE:
-    fprintf(html, "\n<span style=\"display: block; margin-bottom: 1.5em\"></span>\n");
+    fprintf(html, "\n<span style=\"display: block; margin-bottom: 1.5em; overflow: hidden\"></span>\n");
     WRANG_gen(root->left_child, html, 0);
     WRANG_gen(root->right_sibling, html, 0);
     break;
 
   case BOLD:
-    fprintf(html, "\n<strong>\n");
+    fprintf(html, "<strong>");
     WRANG_gen(root->left_child, html, 0);
-    fprintf(html, "\n</strong>\n");
+    fprintf(html, "</strong>");
     WRANG_gen(root->right_sibling, html, 0);
     break;
 
   case ITALICS:
-    fprintf(html, "\n<em>\n");
+    fprintf(html, "<em>");
     WRANG_gen(root->left_child, html, 0);
-    fprintf(html, "\n</em>\n");
+    fprintf(html, "</em>");
     WRANG_gen(root->right_sibling, html, 0);
     break;
 
   case UNDERLINE:
-    fprintf(html, "\n<u>\n");
+    fprintf(html, "<u>");
     WRANG_gen(root->left_child, html, 0);
-    fprintf(html, "\n</u>\n");
+    fprintf(html, "</u>");
     WRANG_gen(root->right_sibling, html, 0);
     break;
 
   case CODE:
-    fprintf(html, "\n<code>\n");
+    fprintf(html, "<code>");
     WRANG_gen(root->left_child, html, 0);
-    fprintf(html, "\n</code>\n");
+    fprintf(html, "</code>");
     WRANG_gen(root->right_sibling, html, 0);
     break;
 

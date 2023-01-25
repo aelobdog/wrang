@@ -72,7 +72,7 @@ void tree_print(TreeNode* root, int level) {
     {
       char word[50] = {0};
       memcpy(word, root->content.word->token->ptr, root->content.word->token->len);
-      printf("WORD: %s\n", word);
+      printf("WORD: %s (%d)\n", word, root->content.word->token->len);
     }
     break;
 
@@ -267,7 +267,7 @@ TreeNode* parse_code(TokenList* tklist) {
     fprintf(stderr, "ERROR: (line %ld): parser internal error, `token_advance` must have failed somewhere\n", token_current(tklist)->line);
     return NULL;
   }
-  parse_tokens_till(&code, tklist, BTICK);
+  parse_tokens_as_words_only(&code, tklist, BTICK);
   return code;
 }
 
