@@ -130,12 +130,12 @@ void WRANG_gen(TreeNode* root, FILE* html, u8 inlist) {
       fprintf(html, "</li>\n");
 
       if (! inlist) {
-	while (right_iter->node_type == LIST) {
+	while (right_iter && right_iter->node_type == LIST) {
 	  right_iter = right_iter->right_sibling;
 	}
       }
 
-      if (right->node_type == LIST) {
+      if (right && right->node_type == LIST) {
 	WRANG_gen(right, html, inlist+1);
       }
 

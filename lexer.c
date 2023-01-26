@@ -240,6 +240,7 @@ void WRANG_lex(char* data, TokenList* tklist) {
 
     if (*data_iterator == '\0') break;
   }
+  add_prev_token_as_word(tklist, &tok_start, &data_iterator, line_no);
   token_append(tklist, NULL, 0, NLINE, 0);
   token_append(tklist, NULL, 0, NUM_TOKEN_TYPES, 0);
 }

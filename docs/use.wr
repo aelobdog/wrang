@@ -1,0 +1,24 @@
+#1 Wrang
+
+![wrang mascot:mascot](./wrang_mascot.png)
+
+
+#3 Syntax
+
++ Headings are declared using a `#` sign with a number (1 .. 6) next to it; `eg: #1`
++ Links are declared in the following manner `@[display text](link url)`
++ Images are declared in the following manner `![alt text : SingleWordCssClassName](link url)`
++ Lists are declared using a `+` at the beginning of a line
++ Text can be made bold by surrounding it by a `*` on both sides
++ Text can be italicized by surrounding it by a `/` on both sides
++ Text can be underlined by surrounding it by a `_` on both sides
+
+
+#3 Note
+
++ If consecutive lines start with a `+`, they're consitered as items of the same list
++ Lists cannot have sub-lists
++ Text formatting does not work properly if the format modifiers are not closed in the right order
+
+@[back to home](./index.html)
+@[Wrang on github](https://github.com/aelobdog/wrang)
