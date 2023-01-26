@@ -10,12 +10,12 @@ It is supposed to be simple, and supports only those features that I would use t
 
 Using wrang is super simple!
 
-1. Clone the repository
+#### Clone the repository
 ```bash
 $ git clone https://github.com/aelobdog/wrang
 ```
 
-2. Build
+#### Build
 ```bash
 $ make release
 ```
@@ -24,7 +24,7 @@ or
 $ gcc -o wrang *.c -O3 -s
 ```
 
-3. Run
+#### Run
 ```bash
 $ ./wrang <wrang input> <html output> [ -css stylesheet ] [ -title title ]
 ```
