@@ -1,26 +1,32 @@
-# Wrang, the writing language
+# Wrang
 
-### Background
+### The Writing Language
 
-Not long before starting this project I was working on [SITEFL](https://aelobdog.github.io/sitefl), a simple markup language intended for conversion
-of text to html documents. I use this project extensively for my own webpages. I started out in Go, and while
-that worked for me, it was sloppily written and was in need of a successor. I wrote one called LFET, but to my
-dismay, I found out recently that I'd deleted that directory with its source code accidently. All that remains
-of it is its binary, carefully stashed away in another folder on my system. But that got me thinking, why not
-rewrite the tool properly? with a lexer, parser and everything? Why not just rewrite it in C? This project is a
-result of my response to that train of thought. The syntax will remain unchanged so that I don't have to manually
-refactor all my existing webpages.
+Wrang is a successor to Sitefl, the other markup language that I wrote to help generate my webpages.
 
-### Goals and Non-Goals
+It is supposed to be simple, and supports only those features that I would use to write my blogs. This includes headings, links, images, bullets and basic text formatting like bold, italics and undeline.
 
-There is only one goal with the project really... and that is to have a markdown like text to html tool so that
-setting up websites is easy. I would like to support most basic requirements that I have from such a tool, like
-the ability to have headings, paragraphs, bold/italics/underlined text, bullets, code blocks, links and images.
+### Getting Started
 
-Since I am the only user of this tool, I don't intend to support all the different things that something like
-github flavored markdown supports for example. I don't use tables almost ever, so those aren't supported. I also
-don't need complicated formatting, which is why there is no support for labelled units (like classes and id's)
-to customize the CSS. The generated HTML will have no DIVs, no SPANs, no classes, no id's, etc.
+Using wrang is super simple!
 
-Error reporting is also going to be quite limited as good error messages are not high up in the priotity list at
-the moment. Maybe once the tool works the way is should, I will try and implement better error reporting.
+1. Clone the repository
+```bash
+$ git clone https://github.com/aelobdog/wrang
+```
+
+2. Build
+```bash
+$ make release
+```
+or
+```bash
+$ gcc -o wrang *.c -O3 -s
+```
+
+3. Run
+```bash
+$ ./wrang <wrang input> <html output> [ -css stylesheet ] [ -title title ]
+```
+
+To make life easier, consider moving the `wrang` binary to some place in your path.
