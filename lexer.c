@@ -197,6 +197,20 @@ void WRANG_lex(char* data, TokenList* tklist) {
       ++data_iterator;
       break;
 
+#ifdef _WIN32
+    case '\r':
+      add_prev_token_as_word(tklist, &tok_start, &data_iterator, line_no);
+      ++data_iterator;
+      ++tok_start;
+      break;
+
+    case '\n':
+      token_append(tklist, tok_start, 1, NLINE, line_no);
+      ++line_no;
+      ++tok_start;
+      ++data_iterator;
+      break;
+#else
     case '\n':
       add_prev_token_as_word(tklist, &tok_start, &data_iterator, line_no);
       token_append(tklist, tok_start, 1, NLINE, line_no);
@@ -204,6 +218,7 @@ void WRANG_lex(char* data, TokenList* tklist) {
       ++tok_start;
       ++data_iterator;
       break;
+#endif
 
     case ':':
       add_prev_token_as_word(tklist, &tok_start, &data_iterator, line_no);

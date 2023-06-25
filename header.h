@@ -33,10 +33,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if 0
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#endif
 
 typedef struct Token Token;
 typedef struct TokenArray TokenArray;

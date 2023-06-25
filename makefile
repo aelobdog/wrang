@@ -1,8 +1,8 @@
 all:
-	$(CC) -o wrang *.c -ggdb
+	$(CC) -o bin/wrang *.c -ggdb
 
 release:
-	$(CC) -o wrang *.c -Ofast -s
+	$(CC) -o bin/wrang *.c -Ofast -s
 
 install:
 	mv wrang $(HOME)/.local/bin/wrang
