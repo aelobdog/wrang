@@ -4,11 +4,11 @@
 
 Wrang is a successor to Sitefl, the other markup language that I wrote to help generate my webpages.
 
-It is supposed to be simple, and supports only those features that I would use to write my blogs. This includes headings, links, images, bullets and basic text formatting like bold, italics and undeline.
+It is supposed to be simple, and supports only those features that I would use to write my blogs. This includes headings, links, images, bullets and basic text formatting like bold, italics and underline.
 
 ### Getting Started
 
-Using wrang is super simple!
+Using wrang is super simple! You need the [Odin compiler](https://odin-lang.org/) installed.
 
 #### Clone the repository
 ```bash
@@ -17,11 +17,12 @@ $ git clone https://github.com/aelobdog/wrang
 
 #### Build
 ```bash
-$ make release
+$ odin build . -out:wrang -o:speed
 ```
-or
+
+#### Test
 ```bash
-$ gcc -o wrang *.c -O3 -s
+$ odin test .
 ```
 
 #### Run
