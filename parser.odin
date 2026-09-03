@@ -23,6 +23,8 @@ Node :: struct {
 	text:      string,
 	level:     int,
 	css_class: string,
+	depth:     int, // nesting depth of list items; other kinds leave it zero
+	language:  string, // highlight language of code spans; empty means plain
 	children:  [dynamic]^Node,
 	url:       ^Node,
 }
@@ -37,7 +39,62 @@ parse_tokens :: proc(tokens: []Token) -> ^Node {
 	parser := Parser{tokens = tokens}
 	document := new_node(.Root)
 	parse_until(document, &parser, .End)
+	nest_lists(document)
 	return document
+}
+
+// Items parse flat, each remembering its indent depth; this pass
+// tucks deeper runs under the item above them.
+nest_lists :: proc(node: ^Node) {
+	for child in node.children {
+		nest_lists(child)
+	}
+	restructured := make([dynamic]^Node)
+	index := 0
+	for index < len(node.children) {
+		if node.children[index].kind == .List {
+			run_end := index
+			for run_end < len(node.children) && node.children[run_end].kind == .List {
+				run_end += 1
+			}
+			nest_list_run(&restructured, node.children[index:run_end])
+			index = run_end
+		} else {
+			append(&restructured, node.children[index])
+			index += 1
+		}
+	}
+	node.children = restructured
+}
+
+nest_list_run :: proc(into: ^[dynamic]^Node, run: []^Node) {
+	chain := make([dynamic]^Node)
+	for item in run {
+		for len(chain) > 0 && chain[len(chain) - 1].depth >= item.depth {
+			pop(&chain)
+		}
+		if len(chain) == 0 {
+			append(into, item)
+		} else {
+			add_child(chain[len(chain) - 1], item)
+		}
+		append(&chain, item)
+	}
+}
+
+// Depth of the list marker starting at the given token,
+// or -1 when the line holds no list marker.
+list_marker_depth :: proc(parser: ^Parser, from: int) -> int {
+	index := from
+	depth := 0
+	for index < len(parser.tokens) && parser.tokens[index].kind == .Space {
+		depth += 1
+		index += 1
+	}
+	if index < len(parser.tokens) && parser.tokens[index].kind == .Plus {
+		return depth
+	}
+	return -1
 }
 
 new_node :: proc(kind: Node_Kind) -> ^Node {
@@ -165,7 +222,7 @@ handle_token :: proc(parent: ^Node, parser: ^Parser, token: ^Token) {
 			token.kind = .Word
 		case .Plus:
 			if !parser.line_started {
-				add_child(parent, parse_list(parser))
+				add_child(parent, parse_list_item(parser))
 				return
 			}
 			token.kind = .Word
@@ -190,8 +247,13 @@ handle_token :: proc(parent: ^Node, parser: ^Parser, token: ^Token) {
 		     .Left_Paren,
 		     .Right_Paren,
 		     .Colon,
-		     .Semicolon,
-		     .Space:
+		     .Semicolon:
+			token.kind = .Word
+		case .Space:
+			if !parser.line_started && list_marker_depth(parser, parser.position) >= 0 {
+				add_child(parent, parse_list_item(parser))
+				return
+			}
 			token.kind = .Word
 		case .At:
 			parser.line_started = true
@@ -273,6 +335,7 @@ parse_code :: proc(parser: ^Parser) -> ^Node {
 		return nil
 	}
 	parse_words_only(node, parser, .Backtick)
+	split_code_language(node)
 	return node
 }
 
@@ -322,8 +385,17 @@ heading_level :: proc(character: byte) -> int {
 	return 0
 }
 
-parse_list :: proc(parser: ^Parser) -> ^Node {
+parse_list_item :: proc(parser: ^Parser) -> ^Node {
 	item := new_node(.List)
+	for {
+		current := token_at_cursor(parser)
+		if current == nil || current.kind != .Space {
+			break
+		}
+		item.depth += 1
+		// Cannot fail: the caller saw a list marker ahead.
+		advance_cursor(parser)
+	}
 	if !advance_safely(parser) {
 		return nil
 	}

@@ -66,7 +66,11 @@ write_tree :: proc(dump: ^strings.Builder, node: ^Node, level: int) {
 	case .Underline:
 		strings.write_string(dump, "UNDERLINE\n")
 	case .Code:
-		strings.write_string(dump, "CODE\n")
+		if node.language == "" {
+			strings.write_string(dump, "CODE\n")
+		} else {
+			fmt.sbprintfln(dump, "CODE %s", node.language)
+		}
 	case .Line:
 		strings.write_string(dump, "LINE\n")
 	case .Newline:
