@@ -39,8 +39,7 @@ main :: proc() {
 		os.exit(1)
 	}
 
-	text := normalize_line_endings(string(source))
-	tokens := lex_source(text)
+	tokens := lex_source(string(source))
 	document := parse_tokens(tokens[:])
 
 	page := strings.builder_make()

@@ -1,7 +1,5 @@
 package main
 
-import "core:strings"
-
 Token_Kind :: enum {
 	Hash,
 	Star,
@@ -39,26 +37,7 @@ Scanner :: struct {
 	escaped:    bool,
 }
 
-// Carriage returns never reach the scanner: CRLF, CR, and LF all arrive
-// as a single newline.
-normalize_line_endings :: proc(source: string) -> string {
-	normalized := strings.builder_make()
-	character := 0
-	for character < len(source) {
-		if source[character] == '\r' {
-			strings.write_byte(&normalized, '\n')
-			character += 1
-			if character < len(source) && source[character] == '\n' {
-				character += 1
-			}
-		} else {
-			strings.write_byte(&normalized, source[character])
-			character += 1
-		}
-	}
-	return strings.to_string(normalized)
-}
-
+// CRLF, CR, and LF all lex as a single newline.
 lex_source :: proc(source: string) -> [dynamic]Token {
 	scanner := Scanner {
 		source = source,
@@ -83,6 +62,19 @@ step_scanner :: proc(scanner: ^Scanner) {
 		scanner.line += 1
 		scanner.word_start += 1
 		scanner.position += 1
+	case '\r':
+		flush_word(scanner)
+		append(
+			&scanner.tokens,
+			Token{kind = .Newline, text = "\n", line = scanner.line},
+		)
+		scanner.line += 1
+		scanner.position += 1
+		if scanner.position < len(scanner.source) &&
+		   scanner.source[scanner.position] == '\n' {
+			scanner.position += 1
+		}
+		scanner.word_start = scanner.position
 	case ' ':
 		flush_word(scanner)
 		emit_token(scanner, .Space, scanner.position, scanner.position + 1)

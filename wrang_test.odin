@@ -13,8 +13,7 @@ render_source :: proc(source: string, backing := context.allocator) -> string {
 	mem.dynamic_arena_init(&work)
 	defer mem.dynamic_arena_destroy(&work)
 	context.allocator = mem.dynamic_arena_allocator(&work)
-	text := normalize_line_endings(source)
-	tokens := lex_source(text)
+	tokens := lex_source(source)
 	document := parse_tokens(tokens[:])
 	return strings.clone(generate_html(document), backing)
 }
