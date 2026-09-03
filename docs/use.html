@@ -30,12 +30,23 @@ Syntax
 <li>Headings are declared using a <code>#</code> sign with a number (1 .. 6) next to it; <code>eg: #1</code></li>
 <li>Links are declared in the following manner <code>@[display text](link url)</code></li>
 <li>Images are declared in the following manner <code>![alt text : SingleWordCssClassName](link url)</code></li>
-<li>Lists are declared using a <code>+</code> at the beginning of a line</li>
+<li>Lists are declared using a <code>+</code> at the beginning of a line
+<ul>
+<li>lists nest by indenting with spaces, one level per leading space
+<ul>
+<li>like this</li>
+</ul>
+</li>
+</ul>
+</li>
 <li>Text can be made bold by surrounding it by a <code>*</code> on both sides</li>
 <li>Text can be italicized by surrounding it by a <code>/</code> on both sides</li>
 <li>Text can be underlined by surrounding it by a <code>_</code> on both sides</li>
+<li>Code spans are highlighted by tagging a language, `c:int x = 1;`, `odin:x := 1`, `julia:x = 1`</li>
 </ul>
 
+<span style="display: block; margin-bottom: 1.5em; overflow: hidden"></span>
+Odin greets the world with <code class="language-odin">fmt.println(<span class="hl-string">"hi"</span>)</code>
 <span style="display: block; margin-bottom: 1.5em; overflow: hidden"></span>
 
 <span style="display: block; margin-bottom: 1.5em; overflow: hidden"></span>
@@ -48,7 +59,7 @@ Note
 
 <ul>
 <li>If consecutive lines start with a <code>+</code>, they're consitered as items of the same list</li>
-<li>Lists cannot have sub-lists</li>
+<li>Code highlighting needs hl-keyword, hl-string, hl-comment and hl-number rules in your stylesheet</li>
 <li>Text formatting does not work properly if the format modifiers are not closed in the right order</li>
 </ul>
 

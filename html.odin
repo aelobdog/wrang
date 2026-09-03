@@ -5,7 +5,7 @@ import "core:strings"
 
 generate_html :: proc(document: ^Node) -> string {
 	page := strings.builder_make()
-	write_nodes(&page, []^Node{document}, false)
+	write_nodes(&page, []^Node{document})
 	return strings.to_string(page)
 }
 
@@ -13,36 +13,55 @@ WRAPPED_IN_TAGS := #partial [Node_Kind][2]string{
 	.Bold      = {"<strong>", "</strong>"},
 	.Italic    = {"<em>", "</em>"},
 	.Underline = {"<u>", "</u>"},
-	.Code      = {"<code>", "</code>"},
+}
+
+write_nodes :: proc(page: ^strings.Builder, nodes: []^Node) {
+	index := 0
+	for index < len(nodes) {
+		if nodes[index].kind == .List {
+			index = write_list_run(page, nodes, index)
+		} else {
+			write_single_node(page, nodes[index])
+			index += 1
+		}
+	}
 }
 
 write_children :: proc(page: ^strings.Builder, node: ^Node) {
-	write_nodes(page, node.children[:], false)
+	write_nodes(page, node.children[:])
 }
 
-// Consecutive list items are grouped into one <ul> by the list case below;
-// every other kind ignores the grouping flag.
-write_nodes :: proc(page: ^strings.Builder, nodes: []^Node, in_list: bool) {
-	if len(nodes) == 0 {
-		return
+// Consecutive list items share one list; a run ends at the first other kind.
+write_list_run :: proc(page: ^strings.Builder, nodes: []^Node, from: int) -> int {
+	strings.write_string(page, "\n<ul>\n")
+	index := from
+	for index < len(nodes) && nodes[index].kind == .List {
+		write_list_item(page, nodes[index])
+		index += 1
 	}
-	first := nodes[0]
-	rest := nodes[1:]
-	if in_list && first.kind != .List {
-		return
-	}
-	switch first.kind {
+	strings.write_string(page, "</ul>\n")
+	return index
+}
+
+write_list_item :: proc(page: ^strings.Builder, item: ^Node) {
+	strings.write_string(page, "<li>")
+	write_nodes(page, item.children[:])
+	strings.write_string(page, "</li>\n")
+}
+
+write_single_node :: proc(page: ^strings.Builder, node: ^Node) {
+	switch node.kind {
 	case .Root:
 		strings.write_string(page, "\n<body>\n<div class=\"content\">\n")
 		// Skip the synthetic leading newline the lexer always emits.
-		write_nodes(page, first.children[1:], false)
+		write_nodes(page, node.children[1:])
 		strings.write_string(page, "\n</div>\n</body>\n")
 	case .Plaintext:
-		strings.write_string(page, first.text)
+		strings.write_string(page, node.text)
 	case .Heading:
-		fmt.sbprintfln(page, "\n<h%d>", first.level)
-		write_children(page, first)
-		fmt.sbprintfln(page, "\n</h%d>", first.level)
+		fmt.sbprintfln(page, "\n<h%d>", node.level)
+		write_children(page, node)
+		fmt.sbprintfln(page, "\n</h%d>", node.level)
 	case .Line:
 		strings.write_string(page, "\n<hr>\n")
 	case .Newline:
@@ -50,44 +69,39 @@ write_nodes :: proc(page: ^strings.Builder, nodes: []^Node, in_list: bool) {
 			page,
 			"\n<span style=\"display: block; margin-bottom: 1.5em; overflow: hidden\"></span>\n",
 		)
-	case .Bold, .Italic, .Underline, .Code:
-		tags := WRAPPED_IN_TAGS[first.kind]
+	case .Bold, .Italic, .Underline:
+		tags := WRAPPED_IN_TAGS[node.kind]
 		strings.write_string(page, tags[0])
-		write_children(page, first)
+		write_children(page, node)
 		strings.write_string(page, tags[1])
+	case .Code:
+		code := code_text(node.children[:])
+		if node.language == "" {
+			strings.write_string(page, "<code>")
+			write_escaped(page, code)
+			strings.write_string(page, "</code>")
+		} else {
+			fmt.sbprintf(page, "<code class=\"language-%s\">", node.language)
+			highlight_code(page, node.language, code)
+			strings.write_string(page, "</code>")
+		}
 	case .Link:
 		strings.write_string(page, "\n<a href=\"")
-		write_children(page, first.url)
+		write_children(page, node.url)
 		strings.write_string(page, "\">")
-		write_children(page, first)
+		write_children(page, node)
 		strings.write_string(page, "</a>\n")
 	case .Image:
 		strings.write_string(page, "\n<img src=\"")
-		write_children(page, first.url)
+		write_children(page, node.url)
 		strings.write_string(page, "\" class=\"")
-		strings.write_string(page, first.css_class)
+		strings.write_string(page, node.css_class)
 		strings.write_string(page, "\" alt=\"")
-		write_children(page, first)
+		write_children(page, node)
 		strings.write_string(page, "\">\n")
 	case .List:
-		if !in_list {
-			strings.write_string(page, "\n<ul>\n")
-		}
-		strings.write_string(page, "<li>")
-		write_children(page, first)
-		strings.write_string(page, "</li>\n")
-		write_nodes(page, rest, true)
-		if !in_list {
-			strings.write_string(page, "</ul>\n")
-			after_run := rest
-			for len(after_run) > 0 && after_run[0].kind == .List {
-				after_run = after_run[1:]
-			}
-			write_nodes(page, after_run, false)
-		}
-		return
+		write_list_item(page, node)
 	case .Url:
-		write_children(page, first)
+		write_children(page, node)
 	}
-	write_nodes(page, rest, false)
 }

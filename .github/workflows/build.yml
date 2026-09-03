@@ -1,0 +1,47 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: odin check .
+
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: odin test .
+
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            output: wrang
+          - os: windows-latest
+            output: wrang.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: odin build . -out:${{ matrix.output }} -o:speed
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wrang-${{ matrix.os }}
+          path: ${{ matrix.output }}

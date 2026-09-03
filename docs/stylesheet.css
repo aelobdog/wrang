@@ -15,6 +15,24 @@ code {
     border-radius: 3px;
 }
 
+.hl-keyword {
+    color: #7c3aed;
+    font-weight: bold;
+}
+
+.hl-string {
+    color: #15803d;
+}
+
+.hl-comment {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.hl-number {
+    color: #b45309;
+}
+
 .mascot {
     width: 25%;
     height: auto;

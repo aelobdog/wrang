@@ -102,3 +102,124 @@ crlf_renders_like_lf :: proc(t: ^testing.T) {
 lone_cr_breaks_lines :: proc(t: ^testing.T) {
 	expect_html(t, "a\rb\n", WRAPPER_OPEN + "ab" + SPACER + WRAPPER_CLOSE)
 }
+
+@(test)
+indented_item_nests_once :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"+ one\n  + sub\n+ two\n",
+		WRAPPER_OPEN +
+		"\n<ul>\n<li>one\n<ul>\n<li>sub</li>\n</ul>\n</li>\n<li>two</li>\n</ul>\n" +
+		SPACER +
+		WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+nesting_goes_three_deep :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"+ a\n  + b\n    + c\n",
+		WRAPPER_OPEN +
+		"\n<ul>\n<li>a\n<ul>\n<li>b\n<ul>\n<li>c</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n" +
+		SPACER +
+		WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+sibling_subitems_share_one_list :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"+ one\n  + a\n  + b\n",
+		WRAPPER_OPEN +
+		"\n<ul>\n<li>one\n<ul>\n<li>a</li>\n<li>b</li>\n</ul>\n</li>\n</ul>\n" +
+		SPACER +
+		WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+skipped_depth_attaches_above :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"+ a\n    + deep\n",
+		WRAPPER_OPEN + "\n<ul>\n<li>a\n<ul>\n<li>deep</li>\n</ul>\n</li>\n</ul>\n" + SPACER + WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+indented_text_without_marker_stays_text :: proc(t: ^testing.T) {
+	expect_html(t, "  hello\n", WRAPPER_OPEN + "  hello" + SPACER + WRAPPER_CLOSE)
+}
+
+@(test)
+c_code_highlights :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"`c:int x = 42; // answer`\n",
+		WRAPPER_OPEN +
+		"<code class=\"language-c\"><span class=\"hl-keyword\">int</span> x = <span class=\"hl-number\">42</span>; <span class=\"hl-comment\">// answer</span></code>" +
+		SPACER +
+		WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+odin_code_highlights :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"`odin:package main`\n",
+		WRAPPER_OPEN +
+		"<code class=\"language-odin\"><span class=\"hl-keyword\">package</span> main</code>" +
+		SPACER +
+		WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+julia_code_highlights_strings_comments_numbers :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"`julia:x = \"hi\" #= note =# 3.14`\n",
+		WRAPPER_OPEN +
+		"<code class=\"language-julia\">x = <span class=\"hl-string\">\"hi\"</span> <span class=\"hl-comment\">#= note =#</span> <span class=\"hl-number\">3.14</span></code>" +
+		SPACER +
+		WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+unknown_language_stays_plain :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"`python:x = 1`\n",
+		WRAPPER_OPEN + "<code>python:x = 1</code>" + SPACER + WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+colon_without_language_stays_plain :: proc(t: ^testing.T) {
+	expect_html(t, "`eg: #1`\n", WRAPPER_OPEN + "<code>eg: #1</code>" + SPACER + WRAPPER_CLOSE)
+}
+
+@(test)
+plain_code_escapes_html :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"`<b> & \"q\"`\n",
+		WRAPPER_OPEN + "<code>&lt;b&gt; &amp; \"q\"</code>" + SPACER + WRAPPER_CLOSE,
+	)
+}
+
+@(test)
+multiline_code_highlights :: proc(t: ^testing.T) {
+	expect_html(
+		t,
+		"`c:\nint main() {\n  // greet\n  return 0;\n}`\n",
+		WRAPPER_OPEN +
+		"<code class=\"language-c\">\n<span class=\"hl-keyword\">int</span> main() {\n  <span class=\"hl-comment\">// greet</span>\n  <span class=\"hl-keyword\">return</span> <span class=\"hl-number\">0</span>;\n}</code>" +
+		SPACER +
+		WRAPPER_CLOSE,
+	)
+}
