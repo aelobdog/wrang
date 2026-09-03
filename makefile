@@ -1,8 +1,13 @@
-all:
-	$(CC) -o bin/wrang *.c -ggdb
+all: odin-release
 
-release:
-	$(CC) -o bin/wrang *.c -Ofast -s
+odin:
+	odin.exe build . -out:wrang.exe
 
-install:
-	mv wrang $(HOME)/.local/bin/wrang
+odin-release:
+	odin.exe build . -out:wrang.exe -o:speed
+
+odin-check:
+	odin.exe check .
+
+odin-test:
+	odin.exe test .
